@@ -1,75 +1,47 @@
-# React + TypeScript + Vite
+# messenger-web-client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web client for Telegram messaging via [GREEN-API](https://green-api.com/telegram).
 
-Currently, two official plugins are available:
+Stack: React 19, TypeScript, Vite, CSS Modules.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Scripts
 
-## React Compiler
+| Command                               | Purpose                        |
+| ------------------------------------- | ------------------------------ |
+| `npm run dev`                         | Vite dev server                |
+| `npm run build`                       | Type check + production build  |
+| `npm run preview`                     | Serve the built bundle locally |
+| `npm run typecheck`                   | `tsc -b` without bundling      |
+| `npm run lint` / `lint:fix`           | ESLint (zero warnings allowed) |
+| `npm run stylelint` / `stylelint:fix` | Stylelint over CSS             |
+| `npm run format` / `format:check`     | Prettier                       |
+| `npm test` / `test:watch`             | Vitest + Testing Library       |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Code quality
 
-## Expanding the ESLint configuration
+- **TypeScript** in strict mode: `strict`, `noUncheckedIndexedAccess`,
+  `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature` and more.
+  Shared options live in `tsconfig.base.json`.
+- **ESLint** (flat config): `typescript-eslint` with `strictTypeChecked` +
+  `stylisticTypeChecked` (type-aware rules), `react-hooks`, `react-refresh`,
+  `unicorn`, and import ordering via `import-x`. `eslint-config-prettier` comes last.
+- **Stylelint**: `stylelint-config-standard` plus property ordering, with camelCase
+  class names for CSS Modules.
+- **Prettier** is the single source of truth for formatting.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Git hooks
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Installed automatically by `npm install` (`prepare: husky`).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- `pre-commit` — `lint-staged` over changed files, then `npm run typecheck`
+- `commit-msg` — `commitlint` with [Conventional Commits](https://www.conventionalcommits.org/)
+- `pre-push` — `npm test`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Commit message format: `<type>(<scope>): <description>`, for example
+`feat(chat): send text message`.
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
+`chore`, `revert`.
 
-```
+## Import alias
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+`@/*` maps to `src/*` (configured in `tsconfig.app.json` and `vite.config.ts`).
