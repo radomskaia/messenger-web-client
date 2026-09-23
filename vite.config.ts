@@ -5,6 +5,9 @@ import { defineConfig } from 'vitest/config';
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages serves a project site from /<repo>/, so built asset URLs need
+  // that prefix. CI passes it in; a build run locally stays at the root.
+  base: process.env['BASE_PATH'] ?? '/',
   plugins: [react()],
   resolve: {
     alias: {
