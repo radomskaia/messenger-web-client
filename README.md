@@ -1,6 +1,7 @@
 # messenger-web-client
 
 A web client for Telegram messaging via [GREEN-API](https://green-api.com/telegram).
+Docs [GREEN-API: Telegram](https://green-api.com/telegram/docs/api/)
 
 Stack: React 19, TypeScript, Vite, CSS Modules.
 
