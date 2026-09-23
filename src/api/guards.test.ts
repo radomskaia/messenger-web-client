@@ -4,6 +4,8 @@ import {
   isChatHistoryItem,
   isChatItem,
   isCheckAccountResponse,
+  isInstanceSettings,
+  isSetSettingsResponse,
   isSendMessageResponse,
   isTextMessageNotification,
 } from './guards';
@@ -282,5 +284,73 @@ describe('isChatItem', () => {
 
   it('rejects a non-object', () => {
     expect(isChatItem('nonsense')).toBe(false);
+  });
+});
+
+describe('isInstanceSettings', () => {
+  const settings = {
+    wid: '79876543210@c.us',
+    typeInstance: 'telegram',
+    webhookUrl: '',
+    webhookUrlToken: '',
+    delaySendMessagesMilliseconds: 500,
+    markIncomingMessagesReaded: 'no',
+    markIncomingMessagesReadedOnReply: 'no',
+    outgoingWebhook: 'yes',
+    outgoingMessageWebhook: 'yes',
+    outgoingAPIMessageWebhook: 'yes',
+    incomingWebhook: 'yes',
+    stateWebhook: 'yes',
+    keepOnlineStatus: 'no',
+    editedMessageWebhook: 'yes',
+    deletedMessageWebhook: 'yes',
+  };
+
+  it('accepts the documented response example', () => {
+    expect(isInstanceSettings(settings)).toBe(true);
+  });
+
+  it('accepts a configured webhook url, which the setup planner then clears', () => {
+    expect(isInstanceSettings({ ...settings, webhookUrl: 'https://mysite.test' })).toBe(
+      true,
+    );
+  });
+
+  it('rejects a boolean in place of a yes or no setting', () => {
+    expect(isInstanceSettings({ ...settings, incomingWebhook: true })).toBe(false);
+  });
+
+  it('rejects a missing yes or no setting', () => {
+    const { stateWebhook: _stateWebhook, ...withoutState } = settings;
+
+    expect(isInstanceSettings(withoutState)).toBe(false);
+  });
+
+  it('rejects a string send delay', () => {
+    expect(
+      isInstanceSettings({ ...settings, delaySendMessagesMilliseconds: '500' }),
+    ).toBe(false);
+  });
+
+  it('rejects a non-object', () => {
+    expect(isInstanceSettings(null)).toBe(false);
+  });
+});
+
+describe('isSetSettingsResponse', () => {
+  it('accepts the documented response example', () => {
+    expect(isSetSettingsResponse({ saveSettings: true })).toBe(true);
+  });
+
+  it('accepts a refusal to save', () => {
+    expect(isSetSettingsResponse({ saveSettings: false })).toBe(true);
+  });
+
+  it('rejects a stringified flag', () => {
+    expect(isSetSettingsResponse({ saveSettings: 'true' })).toBe(false);
+  });
+
+  it('rejects an empty body', () => {
+    expect(isSetSettingsResponse({})).toBe(false);
   });
 });

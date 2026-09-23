@@ -8,8 +8,10 @@ import {
   deleteNotification,
   getChatHistory,
   getChatList,
+  getSettings,
   receiveNotification,
   sendMessage,
+  setSettings,
 } from './methods';
 
 const credentials: Credentials = {
@@ -211,5 +213,67 @@ describe('methods', () => {
     ]);
 
     await expect(getChatList(credentials)).resolves.toEqual([sound]);
+  });
+
+  const settings = {
+    wid: '79876543210@c.us',
+    typeInstance: 'telegram',
+    webhookUrl: '',
+    webhookUrlToken: '',
+    delaySendMessagesMilliseconds: 500,
+    markIncomingMessagesReaded: 'no',
+    markIncomingMessagesReadedOnReply: 'no',
+    outgoingWebhook: 'yes',
+    outgoingMessageWebhook: 'yes',
+    outgoingAPIMessageWebhook: 'yes',
+    incomingWebhook: 'yes',
+    stateWebhook: 'yes',
+    keepOnlineStatus: 'no',
+    editedMessageWebhook: 'yes',
+    deletedMessageWebhook: 'yes',
+  };
+
+  it('fetches the settings as a GET from the getSettings endpoint', async () => {
+    const spy = vi.spyOn(client, 'request').mockResolvedValue(settings);
+
+    await expect(getSettings(credentials)).resolves.toEqual(settings);
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ method: 'GET', endpoint: 'getSettings' }),
+    );
+  });
+
+  it('rejects a getSettings body of an unexpected shape', async () => {
+    vi.spyOn(client, 'request').mockResolvedValue({ ...settings, stateWebhook: 1 });
+
+    await expect(getSettings(credentials)).rejects.toThrow('unexpected shape');
+  });
+
+  it('sends only the settings it was asked to change', async () => {
+    const spy = vi.spyOn(client, 'request').mockResolvedValue({ saveSettings: true });
+
+    await setSettings(credentials, { incomingWebhook: 'yes' });
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        endpoint: 'setSettings',
+        body: { incomingWebhook: 'yes' },
+      }),
+    );
+  });
+
+  it('refuses an empty patch, which would restart the instance for nothing', async () => {
+    const spy = vi.spyOn(client, 'request').mockResolvedValue({ saveSettings: true });
+
+    await expect(setSettings(credentials, {})).rejects.toThrow('at least one setting');
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('reports a refusal to save rather than assuming success', async () => {
+    vi.spyOn(client, 'request').mockResolvedValue({ saveSettings: false });
+
+    await expect(setSettings(credentials, { stateWebhook: 'yes' })).rejects.toThrow(
+      'not saved',
+    );
   });
 });

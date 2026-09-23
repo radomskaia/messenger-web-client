@@ -140,6 +140,39 @@ export type ChatHistoryItem =
   | (IncomingChatHistoryItem & ChatHistoryMessage)
   | (OutgoingChatHistoryItem & ChatHistoryMessage);
 
+export const YES_NO = ['yes', 'no'] as const;
+
+export type YesNo = (typeof YES_NO)[number];
+
+export const YES_NO_SETTINGS = [
+  'markIncomingMessagesReaded',
+  'markIncomingMessagesReadedOnReply',
+  'outgoingWebhook',
+  'outgoingMessageWebhook',
+  'outgoingAPIMessageWebhook',
+  'incomingWebhook',
+  'stateWebhook',
+  'keepOnlineStatus',
+  'editedMessageWebhook',
+  'deletedMessageWebhook',
+] as const;
+
+type YesNoSettings = Record<(typeof YES_NO_SETTINGS)[number], YesNo>;
+
+export interface InstanceSettings extends YesNoSettings {
+  wid: string;
+  typeInstance: string;
+  webhookUrl: string;
+  webhookUrlToken: string;
+  delaySendMessagesMilliseconds: number;
+}
+
+export type SettingsPatch = Partial<Omit<InstanceSettings, 'wid' | 'typeInstance'>>;
+
+export interface SetSettingsResponse {
+  saveSettings: boolean;
+}
+
 export interface DeleteNotificationResponse {
   result: boolean;
   reason: string;

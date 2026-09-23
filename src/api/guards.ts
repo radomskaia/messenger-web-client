@@ -4,13 +4,17 @@ import {
   HISTORY_MESSAGE_TYPES,
   MESSAGE_STATUSES,
   TEXT_MESSAGE_WEBHOOKS,
+  YES_NO,
+  YES_NO_SETTINGS,
 } from './types';
 
 import type {
   ChatHistoryItem,
   ChatItem,
   CheckAccountResponse,
+  InstanceSettings,
   SendMessageResponse,
+  SetSettingsResponse,
   TextMessageNotification,
   TextMessageWebhook,
 } from './types';
@@ -170,4 +174,20 @@ export function isChatItem(value: unknown): value is ChatItem {
     isNumber(value['phoneNumber']) &&
     isString(value['username'])
   );
+}
+
+export function isInstanceSettings(value: unknown): value is InstanceSettings {
+  return (
+    isRecord(value) &&
+    isString(value['wid']) &&
+    isString(value['typeInstance']) &&
+    isString(value['webhookUrl']) &&
+    isString(value['webhookUrlToken']) &&
+    isNumber(value['delaySendMessagesMilliseconds']) &&
+    YES_NO_SETTINGS.every((setting) => isMember(YES_NO, value[setting]))
+  );
+}
+
+export function isSetSettingsResponse(value: unknown): value is SetSettingsResponse {
+  return isRecord(value) && isBoolean(value['saveSettings']);
 }

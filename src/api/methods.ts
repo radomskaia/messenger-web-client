@@ -5,16 +5,21 @@ import {
   isChatHistoryItem,
   isChatItem,
   isCheckAccountResponse,
+  isInstanceSettings,
   isSendMessageResponse,
+  isSetSettingsResponse,
 } from './guards';
 
 import type {
   ChatHistoryItem,
   ChatItem,
   CheckAccountResponse,
+  InstanceSettings,
   NotificationEnvelope,
   SendMessagePayload,
   SendMessageResponse,
+  SetSettingsResponse,
+  SettingsPatch,
 } from './types';
 
 const DEFAULT_HISTORY_COUNT = 100;
@@ -108,4 +113,42 @@ export async function getChatList(credentials: Credentials): Promise<ChatItem[]>
   });
 
   return (response ?? []).filter((item) => isChatItem(item));
+}
+
+export async function getSettings(credentials: Credentials): Promise<InstanceSettings> {
+  const response = await request<InstanceSettings>({
+    credentials,
+    method: 'GET',
+    endpoint: 'getSettings',
+  });
+
+  if (!isInstanceSettings(response)) {
+    throw new Error('getSettings returned a body of an unexpected shape');
+  }
+
+  return response;
+}
+
+export async function setSettings(
+  credentials: Credentials,
+  patch: SettingsPatch,
+): Promise<void> {
+  if (Object.keys(patch).length === 0) {
+    throw new Error('setSettings needs at least one setting to change');
+  }
+
+  const response = await request<SetSettingsResponse>({
+    credentials,
+    method: 'POST',
+    endpoint: 'setSettings',
+    body: patch,
+  });
+
+  if (!isSetSettingsResponse(response)) {
+    throw new Error('setSettings returned a body of an unexpected shape');
+  }
+
+  if (!response.saveSettings) {
+    throw new Error('setSettings reported that the settings were not saved');
+  }
 }
