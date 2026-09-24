@@ -17,3 +17,7 @@ export class NetworkError extends Error {
     this.cause = cause;
   }
 }
+
+export function isRejectedCredentials(error: unknown): boolean {
+  return error instanceof GreenApiError && (error.status === 401 || error.status === 403);
+}

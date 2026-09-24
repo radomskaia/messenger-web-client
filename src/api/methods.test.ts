@@ -262,6 +262,24 @@ describe('methods', () => {
     );
   });
 
+  it('lets a settings read be cancelled', async () => {
+    const spy = vi.spyOn(client, 'request').mockResolvedValue(settings);
+    const { signal } = new AbortController();
+
+    await getSettings(credentials, { signal });
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ signal }));
+  });
+
+  it('lets a settings change be cancelled', async () => {
+    const spy = vi.spyOn(client, 'request').mockResolvedValue({ saveSettings: true });
+    const { signal } = new AbortController();
+
+    await setSettings(credentials, { incomingWebhook: 'yes' }, { signal });
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ signal }));
+  });
+
   it('refuses an empty patch, which would restart the instance for nothing', async () => {
     const spy = vi.spyOn(client, 'request').mockResolvedValue({ saveSettings: true });
 
