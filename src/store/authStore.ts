@@ -3,13 +3,15 @@ import { persist } from 'zustand/middleware';
 
 import { isRecord, isString } from '@/api/guards.ts';
 import type { Credentials } from '@/domain/types';
+import { useChatsStore } from '@/store/chatsStore';
 
 interface AuthState {
   credentials: Credentials | null;
   isVerified: boolean;
+  signOutReason: string | null;
   signIn: (credentials: Credentials) => void;
   markVerified: () => void;
-  signOut: () => void;
+  signOut: (reason?: string) => void;
 }
 
 function isCredentials(value: unknown): value is Credentials {
@@ -26,14 +28,16 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       credentials: null,
       isVerified: false,
+      signOutReason: null,
       signIn: (credentials) => {
-        set({ credentials, isVerified: true });
+        set({ credentials, isVerified: true, signOutReason: null });
       },
       markVerified: () => {
         set({ isVerified: true });
       },
-      signOut: () => {
-        set({ credentials: null, isVerified: false });
+      signOut: (reason) => {
+        set({ credentials: null, isVerified: false, signOutReason: reason ?? null });
+        useChatsStore.getState().reset();
       },
     }),
     {

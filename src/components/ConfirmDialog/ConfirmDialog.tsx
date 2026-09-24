@@ -23,9 +23,7 @@ export function ConfirmDialog({
   onResult,
 }: ConfirmDialogProperties) {
   const titleId = useId();
-  // eslint-disable-next-line unicorn/name-replacements
   const dialogRef = useRef<HTMLDialogElement>(null);
-  // eslint-disable-next-line unicorn/name-replacements
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {

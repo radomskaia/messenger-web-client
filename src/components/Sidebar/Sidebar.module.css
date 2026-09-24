@@ -1,0 +1,117 @@
+.sidebar {
+  position: relative;
+  z-index: 1;
+
+  overflow: hidden;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+
+  width: var(--width-sidebar);
+  border-radius: var(--radius-island);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-island);
+}
+
+.header {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+
+  padding: var(--space-page);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chats {
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+
+  overflow-y: auto;
+  flex: 1;
+
+  min-height: 0;
+}
+
+.chats[data-scrolling] {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.chats::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chats::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chats::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: transparent;
+}
+
+.chats[data-scrolling]::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+.heading {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  color: var(--color-text);
+
+  background: var(--color-surface);
+}
+
+.signOut {
+  cursor: pointer;
+
+  padding: 4px 10px;
+  border: none;
+
+  color: var(--color-accent);
+
+  background: none;
+}
+
+.newChat {
+  cursor: pointer;
+
+  margin: 12px var(--space-page);
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-control);
+
+  color: var(--color-on-accent);
+
+  background: var(--color-accent);
+}
+
+/* One pane below this width: the sidebar fills it, and hides while a chat is
+   open (the layout keys that off `data-chat-open`). */
+@media (width <= 925px) {
+  .sidebar {
+    flex: 1;
+    width: auto;
+  }
+
+  :global([data-chat-open='true']) .sidebar {
+    display: none;
+  }
+}
+
+@media (width <= 599px) {
+  .sidebar {
+    border-radius: 0;
+  }
+}

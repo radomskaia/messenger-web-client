@@ -104,6 +104,24 @@ describe('methods', () => {
     ).resolves.toBeNull();
   });
 
+  it('treats a 2xx body without a receiptId as no notification, rather than a broken envelope', async () => {
+    vi.spyOn(client, 'request').mockResolvedValue({
+      body: { typeWebhook: 'stateInstanceChanged' },
+    });
+
+    await expect(
+      receiveNotification(credentials, { receiveTimeoutSeconds: 5 }),
+    ).resolves.toBeNull();
+  });
+
+  it('treats a non-numeric receiptId as no notification', async () => {
+    vi.spyOn(client, 'request').mockResolvedValue({ receiptId: '42', body: {} });
+
+    await expect(
+      receiveNotification(credentials, { receiveTimeoutSeconds: 5 }),
+    ).resolves.toBeNull();
+  });
+
   it('throws when sendMessage gets an empty body, which that endpoint never returns', async () => {
     vi.spyOn(client, 'request').mockResolvedValue(null);
 
@@ -260,6 +278,15 @@ describe('methods', () => {
         body: { incomingWebhook: 'yes' },
       }),
     );
+  });
+
+  it('lets a chat list request be cancelled', async () => {
+    const spy = vi.spyOn(client, 'request').mockResolvedValue([]);
+    const { signal } = new AbortController();
+
+    await getChatList(credentials, { signal });
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ signal }));
   });
 
   it('lets a settings read be cancelled', async () => {

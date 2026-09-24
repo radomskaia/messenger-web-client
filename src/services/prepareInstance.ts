@@ -14,7 +14,7 @@ export async function prepareInstance(
   credentials: Credentials,
   options: PrepareInstanceOptions,
 ): Promise<PrepareInstanceResult> {
-  const requestOptions = options.signal === undefined ? {} : { signal: options.signal };
+  const requestOptions = options.signal ? { signal: options.signal } : {};
   const settings = await getSettings(credentials, requestOptions);
   const plan = planHttpApiSetup(settings);
 

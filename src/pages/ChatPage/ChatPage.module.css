@@ -1,0 +1,149 @@
+.layout {
+  position: relative;
+
+  overflow: hidden;
+  display: flex;
+  gap: var(--space-page);
+
+  height: 100%;
+  padding: var(--space-page);
+
+  background: var(--wallpaper-base);
+}
+
+.wallpaper {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+
+  overflow: hidden;
+
+  background-color: var(--wallpaper-base);
+  background-image: var(--wallpaper-image);
+}
+
+.wallpaper::after {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+
+  opacity: var(--pattern-intensity, 0.4);
+  background: var(--pattern-layer);
+  mix-blend-mode: var(--pattern-blend);
+
+  mask-image: url('./pattern.svg');
+  mask-repeat: repeat;
+  mask-position: 50% center;
+  mask-size: 430px auto;
+}
+
+.thread {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+
+  width: 100%;
+  max-width: var(--width-thread);
+  margin: 0 auto;
+  padding: 10px var(--space-page);
+  border-radius: var(--radius-island);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-island);
+}
+
+.back {
+  cursor: pointer;
+
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+  margin-left: -6px;
+  border: none;
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+
+  background: none;
+}
+
+.back:hover {
+  color: var(--color-accent);
+  background: var(--color-background);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.title {
+  overflow: hidden;
+  flex: 1;
+
+  margin: 0;
+
+  font-size: 16px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer {
+  flex: 0 0 auto;
+
+  width: 100%;
+  max-width: var(--width-thread);
+  margin: 0 auto;
+  border-radius: var(--radius-island);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-island);
+}
+
+.placeholder {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+
+  color: var(--color-text-secondary);
+}
+
+@media (width <= 925px) {
+  .layout[data-chat-open='false'] .thread {
+    display: none;
+  }
+}
+
+@media (width <= 599px) {
+  .layout {
+    gap: 0;
+    padding: 0;
+  }
+
+  .header,
+  .footer {
+    max-width: none;
+    border-radius: 0;
+  }
+}

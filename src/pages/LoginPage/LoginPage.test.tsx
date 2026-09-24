@@ -25,7 +25,7 @@ async function submitCredentials(
 }
 
 beforeEach(() => {
-  useAuthStore.setState({ credentials: null });
+  useAuthStore.setState({ credentials: null, signOutReason: null });
 });
 
 afterEach(() => {
@@ -214,5 +214,25 @@ describe('LoginPage', () => {
     const second = screen.getByRole('alert');
 
     expect(second).not.toBe(first);
+  });
+
+  it('explains a sign-out caused by a rejected token', () => {
+    useAuthStore.getState().signOut('auth.unauthorized');
+    renderWithProviders(<LoginPage />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'GREEN-API rejected these credentials',
+    );
+  });
+
+  it('shows only one alert when a validation error and a sign-out reason are both present', async () => {
+    useAuthStore.getState().signOut('auth.unauthorized');
+    const user = userEvent.setup();
+    renderWithProviders(<LoginPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByRole('alert')).toHaveTextContent('Fill in both fields');
   });
 });

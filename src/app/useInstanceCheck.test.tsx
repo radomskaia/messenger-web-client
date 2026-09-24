@@ -29,7 +29,7 @@ function mountCheck() {
 
   renderWithProviders(<Harness />);
 
-  if (checkInstance === undefined) {
+  if (!checkInstance) {
     throw new Error('Harness did not render');
   }
 

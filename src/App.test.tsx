@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,7 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GreenApiError, NetworkError } from '@/api/errors';
 import * as methods from '@/api/methods';
 import type { Credentials } from '@/domain/types';
+import { startPolling } from '@/services/notificationPolling';
 import { useAuthStore } from '@/store/authStore';
+import { useChatsStore } from '@/store/chatsStore';
 import { configuredInstanceSettings } from '@/test/instanceSettings';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
@@ -23,9 +25,21 @@ function restoreSession() {
   useAuthStore.setState({ credentials, isVerified: false });
 }
 
+function stopPolling(): void {
+  // No real loop is ever started against this test double, so there is
+  // nothing to stop; the lifecycle hook still needs a cleanup function shape.
+}
+
+vi.mock('@/services/notificationPolling', () => ({
+  startPolling: vi.fn(() => stopPolling),
+}));
+
 beforeEach(() => {
-  useAuthStore.setState({ credentials: null });
+  vi.clearAllMocks();
+  // The chat list loads before polling starts; keep that off the live API.
+  vi.spyOn(methods, 'getChatList').mockResolvedValue([]);
   useAuthStore.setState({ credentials: null, isVerified: false });
+  useChatsStore.getState().reset();
 });
 
 afterEach(() => {
@@ -44,7 +58,7 @@ describe('App', () => {
     useAuthStore.setState({ credentials, isVerified: true });
     renderWithProviders(<App />);
 
-    expect(screen.getByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New chat' })).toBeInTheDocument();
     expect(getSettings).not.toHaveBeenCalled();
   });
 
@@ -58,9 +72,9 @@ describe('App', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'Checking your GREEN-API instance',
     );
-    expect(screen.queryByRole('button', { name: 'signOut' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'New chat' })).not.toBeInTheDocument();
 
-    expect(await screen.findByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'New chat' })).toBeInTheDocument();
     expect(getSettings).toHaveBeenCalledWith(credentials, expect.anything());
     expect(useAuthStore.getState().isVerified).toBe(true);
   });
@@ -74,6 +88,10 @@ describe('App', () => {
 
     expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument();
     expect(useAuthStore.getState().credentials).toBeNull();
+    // Otherwise the user lands on an empty form with no idea why.
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'GREEN-API rejected these credentials',
+    );
   });
 
   it('signs out when the user keeps a webhook url set elsewhere since', async () => {
@@ -91,6 +109,9 @@ describe('App', () => {
     expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument();
     expect(setSettings).not.toHaveBeenCalled();
     expect(useAuthStore.getState().credentials).toBeNull();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Messages keep going to the other address',
+    );
   });
 
   it('keeps the session through a network failure and lets the user retry', async () => {
@@ -108,7 +129,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(await screen.findByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'New chat' })).toBeInTheDocument();
   });
 
   it('lets the user sign out instead of retrying', async () => {
@@ -121,6 +142,8 @@ describe('App', () => {
 
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
     expect(useAuthStore.getState().credentials).toBeNull();
+    // Signing out by choice is not a failure the login page should explain.
+    expect(useAuthStore.getState().signOutReason).toBeNull();
   });
 
   it('cancels the first check when StrictMode mounts the app twice', () => {
@@ -161,5 +184,33 @@ describe('App', () => {
     });
 
     expect(signal?.aborted).toBe(true);
+  });
+
+  it('starts polling right after signing in', async () => {
+    useAuthStore.setState({ credentials, isVerified: true });
+    renderWithProviders(<App />);
+
+    await waitFor(() => {
+      expect(vi.mocked(startPolling)).toHaveBeenCalled();
+    });
+  });
+
+  it('does not poll a restored session until the instance check passes', async () => {
+    vi.spyOn(methods, 'getSettings').mockResolvedValue(configuredInstanceSettings);
+    restoreSession();
+    renderWithProviders(<App />);
+
+    // getSettings has not answered yet, so the check is still running.
+    expect(vi.mocked(startPolling)).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(vi.mocked(startPolling)).toHaveBeenCalled();
+    });
+  });
+
+  it('does not poll without credentials', () => {
+    renderWithProviders(<App />);
+
+    expect(vi.mocked(startPolling)).not.toHaveBeenCalled();
   });
 });

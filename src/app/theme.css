@@ -19,6 +19,21 @@
   --width-sidebar: 360px;
   --width-thread: 696px;
   --space-page: 16px;
+  --radius-island: 24px;
+  --shadow-island: 0 1px 4px 0 rgb(0 0 0 / 5%);
+  --scrollbar-thumb: rgb(0 0 0 / 22%);
+  --pattern-intensity: 0.4;
+  --wallpaper-base: #c5d3b0;
+  --wallpaper:
+    radial-gradient(circle at 0 0, #bdcd8c, transparent 70%),
+    radial-gradient(circle at 100% 0, #8eba89, transparent 70%),
+    radial-gradient(circle at 100% 100%, #83b28f, transparent 70%),
+    radial-gradient(circle at 0 100%, #c5d3b0, transparent 70%);
+
+  /* Light: the gradient is the background and the doodles darken it (soft-light). */
+  --wallpaper-image: var(--wallpaper);
+  --pattern-layer: #000;
+  --pattern-blend: soft-light;
 }
 
 :root[data-theme='dark'] {
@@ -34,6 +49,19 @@
   --color-bubble-out: #8774e1;
   --color-bubble-out-text: #fff;
   --color-danger: #ff595a;
+  --scrollbar-thumb: rgb(255 255 255 / 22%);
+  --pattern-intensity: 0.9;
+  --wallpaper-base: #000;
+  --wallpaper:
+    radial-gradient(circle at 0 0, #4f5bd5, transparent 70%),
+    radial-gradient(circle at 100% 0, #962fbf, transparent 70%),
+    radial-gradient(circle at 100% 100%, #dd6cb9, transparent 70%),
+    radial-gradient(circle at 0 100%, #fec496, transparent 70%);
+
+  /* Dark: black background, the gradient shows only through the mask lines. */
+  --wallpaper-image: none;
+  --pattern-layer: var(--wallpaper);
+  --pattern-blend: normal;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -50,5 +78,18 @@
     --color-bubble-out: #8774e1;
     --color-bubble-out-text: #fff;
     --color-danger: #ff595a;
+    --scrollbar-thumb: rgb(255 255 255 / 22%);
+    --pattern-intensity: 0.9;
+    --wallpaper-base: #000;
+    --wallpaper:
+      radial-gradient(circle at 0 0, #4f5bd5, transparent 70%),
+      radial-gradient(circle at 100% 0, #962fbf, transparent 70%),
+      radial-gradient(circle at 100% 100%, #dd6cb9, transparent 70%),
+      radial-gradient(circle at 0 100%, #fec496, transparent 70%);
+
+    /* Dark: black background, the gradient shows only through the mask lines. */
+    --wallpaper-image: none;
+    --pattern-layer: var(--wallpaper);
+    --pattern-blend: normal;
   }
 }

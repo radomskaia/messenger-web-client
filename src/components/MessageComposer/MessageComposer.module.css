@@ -1,0 +1,90 @@
+.composer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+
+  width: 100%;
+  max-width: var(--width-thread);
+  margin: 0 auto;
+  padding: 0.25rem;
+}
+
+.controls {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.counter {
+  padding-right: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.over {
+  color: var(--color-danger);
+}
+
+.field {
+  resize: none;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+
+  overflow-y: auto;
+  flex: 1;
+
+  /* Grows to fourteen lines (the +22px covers padding and border) but never past
+     60% of the window, then scrolls. A taller field keeps the scroll edge away
+     from where you drag-select, avoiding the browser's jump-to-edge auto-scroll. */
+  max-height: min(calc(14lh + 22px), 60vh);
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+
+  background: var(--color-surface);
+}
+
+.field[data-scrolling] {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.field::-webkit-scrollbar {
+  width: 6px;
+}
+
+.field::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.field::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: transparent;
+}
+
+.field[data-scrolling]::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+.field:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.send {
+  cursor: pointer;
+
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-control);
+
+  color: var(--color-on-accent);
+
+  background: var(--color-accent);
+}
+
+.send:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

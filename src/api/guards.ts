@@ -17,6 +17,7 @@ import type {
   SetSettingsResponse,
   TextMessageNotification,
   TextMessageWebhook,
+  NotificationEnvelope,
 } from './types';
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -190,4 +191,8 @@ export function isInstanceSettings(value: unknown): value is InstanceSettings {
 
 export function isSetSettingsResponse(value: unknown): value is SetSettingsResponse {
   return isRecord(value) && isBoolean(value['saveSettings']);
+}
+
+export function isNotificationEnvelope(value: unknown): value is NotificationEnvelope {
+  return isRecord(value) && isNumber(value['receiptId']);
 }
