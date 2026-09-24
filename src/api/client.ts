@@ -62,5 +62,5 @@ export async function request<T>(options: RequestOptions): Promise<T | null> {
     throw new GreenApiError(response.status, text);
   }
 
-  return text.trim() === '' ? null : (JSON.parse(text) as T);
+  return text.trim() ? (JSON.parse(text) as T) : null;
 }

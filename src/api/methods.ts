@@ -6,6 +6,7 @@ import {
   isChatItem,
   isCheckAccountResponse,
   isInstanceSettings,
+  isNotificationEnvelope,
   isSendMessageResponse,
   isSetSettingsResponse,
 } from './guards';
@@ -43,17 +44,19 @@ export async function sendMessage(
   return response;
 }
 
-export function receiveNotification(
+export async function receiveNotification(
   credentials: Credentials,
   options: { receiveTimeoutSeconds: number; signal?: AbortSignal },
 ): Promise<NotificationEnvelope | null> {
-  return request<NotificationEnvelope>({
+  const response = await request<unknown>({
     credentials,
     method: 'GET',
     endpoint: 'receiveNotification',
     search: { receiveTimeout: String(options.receiveTimeoutSeconds) },
     ...(options.signal !== undefined && { signal: options.signal }),
   });
+
+  return isNotificationEnvelope(response) ? response : null;
 }
 
 export async function deleteNotification(
