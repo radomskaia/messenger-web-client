@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 
 import { GreenApiError } from '@/api/errors';
-import { getChatList } from '@/api/methods';
-import type { Chat, Credentials } from '@/domain/types';
+import { getChatHistory, getChatList } from '@/api/methods';
+import { historyItemToMessage } from '@/domain/mappers';
+import type { Chat, Credentials, Message } from '@/domain/types';
 import { startPolling } from '@/services/notificationPolling';
 import { useAuthStore } from '@/store/authStore';
 import { useChatsStore } from '@/store/chatsStore';
 import { useConnectionStore } from '@/store/connectionStore';
+
+import { handleNotification } from './handleNotification';
 
 const UNAUTHORIZED = 401;
 
@@ -38,6 +41,7 @@ async function loadChatList(
 export function useNotificationLifecycle(): void {
   const credentials = useAuthStore((state) => state.credentials);
   const isVerified = useAuthStore((state) => state.isVerified);
+  const activeChatId = useChatsStore((state) => state.activeChatId);
 
   useEffect(() => {
     if (!credentials || !isVerified) {
@@ -48,6 +52,8 @@ export function useNotificationLifecycle(): void {
     let stop: (() => void) | undefined;
 
     const start = async () => {
+      // GREEN-API answers 429 when getChats and the first receiveNotification
+      // overlap, so the chat list goes first and polling waits for it.
       await loadChatList(credentials, controller.signal);
 
       if (controller.signal.aborted) {
@@ -55,9 +61,7 @@ export function useNotificationLifecycle(): void {
       }
 
       stop = startPolling(credentials, {
-        onNotification: () => {
-          /* empty */
-        },
+        onNotification: handleNotification,
         onConnectionChange: useConnectionStore.getState().setStatus,
         onError: (error) => {
           if (error instanceof GreenApiError && error.status === UNAUTHORIZED) {
@@ -75,4 +79,23 @@ export function useNotificationLifecycle(): void {
       useConnectionStore.getState().setStatus('idle');
     };
   }, [credentials, isVerified]);
+
+  useEffect(() => {
+    if (!credentials || !activeChatId) {
+      return;
+    }
+
+    const load = async () => {
+      const history = await getChatHistory(credentials, activeChatId);
+      const messages = history
+        .map((item) => historyItemToMessage(item))
+        .filter((message): message is Message => message !== null);
+
+      useChatsStore.getState().addMessages(messages);
+    };
+
+    void load().catch(() => {
+      useConnectionStore.getState().setStatus('reconnecting');
+    });
+  }, [credentials, activeChatId]);
 }

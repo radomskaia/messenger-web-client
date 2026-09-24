@@ -1,6 +1,76 @@
 import { describe, expect, it } from 'vitest';
 
-import { chatTitle } from './mappers';
+import type { ChatHistoryItem, TextMessageNotification } from '@/api/types';
+
+import { chatTitle, historyItemToMessage, notificationToMessage } from './mappers';
+
+const notification: TextMessageNotification = {
+  typeWebhook: 'incomingMessageReceived',
+  idMessage: 'ABC',
+  timestamp: 1_763_115_112,
+  senderData: { chatId: '10000000', senderName: 'Ivan', chatName: 'Ivan' },
+  messageData: {
+    typeMessage: 'textMessage',
+    textMessageData: { textMessage: 'hello' },
+  },
+};
+
+describe('notificationToMessage', () => {
+  it('converts an incoming notification', () => {
+    expect(notificationToMessage(notification)).toEqual({
+      idMessage: 'ABC',
+      chatId: '10000000',
+      direction: 'incoming',
+      text: 'hello',
+      timestamp: 1_763_115_112_000,
+      status: 'sent',
+    });
+  });
+
+  it('marks an outgoing webhook as outgoing', () => {
+    const outgoing = { ...notification, typeWebhook: 'outgoingMessageReceived' } as const;
+
+    expect(notificationToMessage(outgoing).direction).toBe('outgoing');
+  });
+
+  it('converts the timestamp from seconds to milliseconds', () => {
+    expect(notificationToMessage(notification).timestamp).toBe(1_763_115_112_000);
+  });
+});
+
+describe('historyItemToMessage', () => {
+  it('converts a text history item into the same shape as a notification', () => {
+    const item: ChatHistoryItem = {
+      type: 'incoming',
+      idMessage: 'ABC',
+      timestamp: 1_763_115_112,
+      chatId: '10000000',
+      chatType: 'user',
+      senderName: 'Ivan',
+      senderType: 'user',
+      typeMessage: 'textMessage',
+      textMessage: 'hello',
+    };
+
+    expect(historyItemToMessage(item)).toEqual(notificationToMessage(notification));
+  });
+
+  it('ignores a non-text history item', () => {
+    const item: ChatHistoryItem = {
+      type: 'incoming',
+      idMessage: 'IMG',
+      timestamp: 1,
+      chatId: '10000000',
+      chatType: 'user',
+      senderName: 'Ivan',
+      senderType: 'user',
+      typeMessage: 'imageMessage',
+      downloadUrl: 'https://example.test/photo.jpg',
+    };
+
+    expect(historyItemToMessage(item)).toBeNull();
+  });
+});
 
 describe('chatTitle', () => {
   it('prefers the contact name', () => {
