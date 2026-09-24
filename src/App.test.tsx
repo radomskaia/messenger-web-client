@@ -1,12 +1,32 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { useAuthStore } from '@/store/authStore';
+import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { App } from './App';
 
-describe('App', () => {
-  it('renders the application heading', () => {
-    render(<App />);
+beforeEach(() => {
+  useAuthStore.setState({ credentials: null });
+});
 
-    expect(screen.getByRole('heading', { name: 'Messenger' })).toBeInTheDocument();
+describe('App', () => {
+  it('shows the login page when there are no credentials', () => {
+    renderWithProviders(<App />);
+
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
+  });
+
+  it('shows the chat page once credentials exist', () => {
+    useAuthStore.setState({
+      credentials: {
+        idInstance: '1',
+        apiTokenInstance: 't',
+        apiUrl: 'https://api.green-api.com',
+      },
+    });
+    renderWithProviders(<App />);
+
+    expect(screen.getByRole('button', { name: 'signOut' })).toBeInTheDocument();
   });
 });
