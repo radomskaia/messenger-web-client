@@ -15,8 +15,9 @@ import tseslint from 'typescript-eslint';
 
 /** Unicorn rules shared between tooling configs and application code. */
 const unicornOverrides = {
-  // props, ref, params and friends are established React names, not abbreviations.
-  'unicorn/prevent-abbreviations': 'off',
+  // `ref`/`Ref` is an established React name (useRef, forwardRef), not an
+  // abbreviation to expand to `reference`. Other abbreviations still get caught.
+  'unicorn/name-replacements': ['error', { replacements: { ref: false } }],
   // Single-line JSDoc is common practice; splitting it across three lines helps nobody.
   'unicorn/single-line-block-comment-style': 'off',
   'unicorn/prefer-export-from': 'off',

@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 const HIDE_DELAY_MS = 900;
 
 export function useAutoHideScrollbar<T extends HTMLElement>() {
-  // eslint-disable-next-line unicorn/name-replacements
   const ref = useRef<T>(null);
 
   useEffect(() => {

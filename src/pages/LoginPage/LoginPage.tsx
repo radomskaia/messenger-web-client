@@ -23,7 +23,6 @@ export function LoginPage() {
   const [apiTokenInstance, setApiTokenInstance] = useState('');
   const [error, setError] = useState<{ message: string; attempt: number } | null>(null);
   const [isChecking, setIsChecking] = useState(false);
-  // eslint-disable-next-line unicorn/name-replacements
   const failedAttemptsRef = useRef(0);
 
   const showError = (message: string) => {

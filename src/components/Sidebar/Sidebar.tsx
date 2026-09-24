@@ -17,7 +17,6 @@ export function Sidebar() {
   const setLanguage = useSettingsStore((state) => state.setLanguage);
   const setTheme = useSettingsStore((state) => state.setTheme);
   const [isCreating, setIsCreating] = useState(false);
-  // eslint-disable-next-line unicorn/name-replacements
   const chatsScrollRef = useAutoHideScrollbar<HTMLDivElement>();
 
   return (

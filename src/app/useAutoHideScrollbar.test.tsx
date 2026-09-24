@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAutoHideScrollbar } from './useAutoHideScrollbar';
 
 function Scroller() {
-  // eslint-disable-next-line unicorn/name-replacements
   const ref = useAutoHideScrollbar<HTMLDivElement>();
 
   return (

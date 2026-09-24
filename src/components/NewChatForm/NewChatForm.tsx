@@ -17,7 +17,6 @@ interface NewChatFormProperties {
 export function NewChatForm({ onClose }: NewChatFormProperties) {
   const { t } = useTranslation();
   const fieldId = useId();
-  // eslint-disable-next-line unicorn/name-replacements
   const isClosedRef = useRef(false);
   const credentials = useAuthStore((state) => state.credentials);
   const mergeChats = useChatsStore((state) => state.mergeChats);
