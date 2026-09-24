@@ -70,9 +70,6 @@ async function runLoop(
       safely(() => {
         handlers.onError?.(error);
       });
-      safely(() => {
-        handlers.onConnectionChange('reconnecting');
-      });
       await delay(backoff, signal);
       backoff = Math.min(backoff * BACKOFF_FACTOR, options.maxBackoffMs);
     }

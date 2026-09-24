@@ -150,22 +150,6 @@ describe('startPolling', () => {
     expect(receive.mock.calls.length).toBeGreaterThan(1);
   });
 
-  it('reports the reconnecting status on failure', async () => {
-    vi.spyOn(methods, 'receiveNotification')
-      .mockRejectedValueOnce(new Error('offline'))
-      .mockResolvedValue(null);
-    const onConnectionChange = vi.fn();
-
-    const stop = startPolling(
-      credentials,
-      { onNotification: vi.fn(), onConnectionChange },
-      options,
-    );
-    await runBriefly(stop);
-
-    expect(onConnectionChange).toHaveBeenCalledWith('reconnecting');
-  });
-
   it('reports the error so the caller can react to an expired token', async () => {
     const failure = new Error('unauthorized');
     vi.spyOn(methods, 'receiveNotification')

@@ -1,6 +1,8 @@
+import { isTooManyRequests } from '@/api/errors';
 import { sendMessage } from '@/api/methods';
 import type { Credentials } from '@/domain/types';
 import { useChatsStore } from '@/store/chatsStore';
+import { useToastStore } from '@/store/toastStore';
 
 // eslint-disable-next-line unicorn/consistent-boolean-name
 export async function sendTextMessage(
@@ -34,7 +36,10 @@ export async function sendTextMessage(
     });
 
     return true;
-  } catch {
+  } catch (error) {
+    useToastStore
+      .getState()
+      .push(isTooManyRequests(error) ? 'toast.tooManyRequests' : 'toast.sendFailed');
     useChatsStore.getState().removeMessage(chatId, temporaryId);
 
     return false;

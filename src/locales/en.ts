@@ -1,4 +1,8 @@
 export const en = {
+  toast: {
+    tooManyRequests: 'Too many requests, try again',
+    sendFailed: 'Could not send the message',
+  },
   auth: {
     heading: 'Sign in with GREEN-API',
     idInstance: 'idInstance',
@@ -10,6 +14,10 @@ export const en = {
     checking: 'Checking…',
     network: 'Could not reach GREEN-API. Check your connection and try again.',
     failed: 'Something went wrong. Try again.',
+    expired: 'Your GREEN-API instance has expired. Renew it in the console.',
+    deleted: 'This GREEN-API instance no longer exists.',
+    notAuthorized:
+      'This instance is not authorized. Authorize it in the GREEN-API console.',
     webhookDialog: {
       title: 'Receive messages in this app?',
       current: 'This instance already sends its notifications to:',

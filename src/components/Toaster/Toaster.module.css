@@ -1,0 +1,27 @@
+.container {
+  position: fixed;
+  z-index: 10;
+  top: var(--space-page);
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.toast {
+  cursor: pointer;
+
+  max-width: 90vw;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-control);
+
+  font: inherit;
+  color: var(--color-on-accent);
+
+  background: var(--color-danger);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 25%);
+}

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { GreenApiError } from '@/api/errors';
+import { classifyApiFailure } from '@/api/errors';
 import { getChatHistory, getChatList } from '@/api/methods';
 import { historyItemToMessage } from '@/domain/mappers';
 import type { Chat, Credentials, Message } from '@/domain/types';
@@ -8,10 +8,34 @@ import { startPolling } from '@/services/notificationPolling';
 import { useAuthStore } from '@/store/authStore';
 import { useChatsStore } from '@/store/chatsStore';
 import { useConnectionStore } from '@/store/connectionStore';
+import { useToastStore } from '@/store/toastStore';
 
 import { handleNotification } from './handleNotification';
 
-const UNAUTHORIZED = 401;
+const SIGN_OUT_REASON = {
+  rejected: 'auth.unauthorized',
+  expired: 'auth.expired',
+  deleted: 'auth.deleted',
+  notAuthorized: 'auth.notAuthorized',
+} as const;
+
+function handleFailure(error: unknown): void {
+  const failure = classifyApiFailure(error);
+
+  if (failure === 'rateLimited') {
+    useToastStore.getState().push('toast.tooManyRequests');
+
+    return;
+  }
+
+  if (failure === 'transient') {
+    useConnectionStore.getState().setStatus('reconnecting');
+
+    return;
+  }
+
+  useAuthStore.getState().signOut(SIGN_OUT_REASON[failure]);
+}
 
 async function loadChatList(
   credentials: Credentials,
@@ -29,12 +53,12 @@ async function loadChatList(
     }));
 
     useChatsStore.getState().mergeChats(chats);
-  } catch {
+  } catch (error) {
     if (signal.aborted) {
       return;
     }
 
-    useConnectionStore.getState().setStatus('reconnecting');
+    handleFailure(error);
   }
 }
 
@@ -63,11 +87,7 @@ export function useNotificationLifecycle(): void {
       stop = startPolling(credentials, {
         onNotification: handleNotification,
         onConnectionChange: useConnectionStore.getState().setStatus,
-        onError: (error) => {
-          if (error instanceof GreenApiError && error.status === UNAUTHORIZED) {
-            useAuthStore.getState().signOut('auth.unauthorized');
-          }
-        },
+        onError: handleFailure,
       });
     };
 
@@ -94,8 +114,8 @@ export function useNotificationLifecycle(): void {
       useChatsStore.getState().addMessages(messages);
     };
 
-    void load().catch(() => {
-      useConnectionStore.getState().setStatus('reconnecting');
+    void load().catch((error: unknown) => {
+      handleFailure(error);
     });
   }, [credentials, activeChatId]);
 }

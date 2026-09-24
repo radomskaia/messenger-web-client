@@ -7,6 +7,7 @@ import type { ChatItem } from '@/api/types';
 import { useAuthStore } from '@/store/authStore';
 import { useChatsStore } from '@/store/chatsStore';
 import { useConnectionStore } from '@/store/connectionStore';
+import { useToastStore } from '@/store/toastStore';
 import { deferred } from '@/test/deferred';
 
 import { useNotificationLifecycle } from './useNotificationLifecycle';
@@ -24,6 +25,7 @@ beforeEach(() => {
   vi.spyOn(methods, 'getChatList').mockResolvedValue([]);
   useChatsStore.getState().reset();
   useConnectionStore.setState({ status: 'idle' });
+  useToastStore.getState().reset();
   useAuthStore.setState({
     credentials: {
       idInstance: '1',
@@ -97,6 +99,95 @@ describe('useNotificationLifecycle', () => {
 
     await waitFor(() => {
       expect(useConnectionStore.getState().status).toBe('reconnecting');
+    });
+  });
+
+  it('shows a toast, not the reconnecting banner, when a history load is rate-limited', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockReturnValue(
+      new Promise(() => {
+        // Never resolves; isolate the history effect from the poll loop.
+      }),
+    );
+    vi.spyOn(methods, 'getChatHistory').mockRejectedValue(
+      new GreenApiError(429, 'slow down'),
+    );
+    useChatsStore.getState().setActiveChat('10');
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+    });
+    expect(useToastStore.getState().toasts[0]?.messageKey).toBe('toast.tooManyRequests');
+    expect(useConnectionStore.getState().status).not.toBe('reconnecting');
+  });
+
+  it('shows a toast, not the banner, when the chat list is rate-limited', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockReturnValue(
+      new Promise(() => {
+        // Never resolves; isolate loadChatList from the poll loop.
+      }),
+    );
+    vi.spyOn(methods, 'getChatList').mockRejectedValue(
+      new GreenApiError(429, 'slow down'),
+    );
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+    });
+    expect(useConnectionStore.getState().status).not.toBe('reconnecting');
+  });
+
+  it('signs out with a reason when GREEN-API forbids the poll (403)', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockRejectedValue(
+      new GreenApiError(403, 'Forbidden'),
+    );
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useAuthStore.getState().credentials).toBeNull();
+    });
+    expect(useAuthStore.getState().signOutReason).toBe('auth.unauthorized');
+  });
+
+  it('signs out with the expired reason when the instance subscription ended', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockRejectedValue(
+      new GreenApiError(
+        400,
+        'Instance account is expired. Renew your instance from personal area',
+      ),
+    );
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useAuthStore.getState().signOutReason).toBe('auth.expired');
+    });
+    expect(useConnectionStore.getState().status).not.toBe('reconnecting');
+  });
+
+  it('shows a toast when the poll loop is rate-limited', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockRejectedValue(
+      new GreenApiError(429, 'slow down'),
+    );
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts).toHaveLength(1);
     });
   });
 

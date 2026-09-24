@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { GreenApiError } from '@/api/errors';
 import * as methods from '@/api/methods';
 import type { Credentials } from '@/domain/types';
 import { useChatsStore } from '@/store/chatsStore';
+import { useToastStore } from '@/store/toastStore';
 
 import { sendTextMessage } from './sendTextMessage';
 
@@ -15,6 +17,7 @@ const credentials: Credentials = {
 beforeEach(() => {
   vi.restoreAllMocks();
   useChatsStore.getState().reset();
+  useToastStore.getState().reset();
 });
 
 describe('sendTextMessage', () => {
@@ -78,5 +81,23 @@ describe('sendTextMessage', () => {
     vi.spyOn(methods, 'sendMessage').mockRejectedValue(new Error('offline'));
 
     await expect(sendTextMessage(credentials, '10', 'hi')).resolves.toBe(false);
+  });
+
+  it('shows a generic toast when the send fails for another reason', async () => {
+    vi.spyOn(methods, 'sendMessage').mockRejectedValue(new Error('offline'));
+
+    await sendTextMessage(credentials, '10', 'hi');
+
+    expect(useToastStore.getState().toasts[0]?.messageKey).toBe('toast.sendFailed');
+  });
+
+  it('shows a toast when the send is rate-limited', async () => {
+    vi.spyOn(methods, 'sendMessage').mockRejectedValue(
+      new GreenApiError(429, 'slow down'),
+    );
+
+    await sendTextMessage(credentials, '10', 'hi');
+
+    expect(useToastStore.getState().toasts[0]?.messageKey).toBe('toast.tooManyRequests');
   });
 });
