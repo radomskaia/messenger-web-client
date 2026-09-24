@@ -20,6 +20,9 @@ export function MessageList({ chatId }: MessageListProperties) {
   const unreadDivider = useChatsStore((state) => state.unreadDivider);
   const markChatRead = useChatsStore((state) => state.markChatRead);
   const dismissUnreadDivider = useChatsStore((state) => state.dismissUnreadDivider);
+  const isLoadingHistory = useChatsStore(
+    (state) => state.historyLoading[chatId] ?? false,
+  );
   const scrollRef = useAutoHideScrollbar<HTMLDivElement>();
   const dividerRef = useRef<HTMLLIElement>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -119,6 +122,22 @@ export function MessageList({ chatId }: MessageListProperties) {
         onScroll={handleScroll}
       >
         <ul className={styles['list']}>
+          {isLoadingHistory && (
+            <li
+              className={styles['loader']}
+              role="status"
+              aria-label={t('chats.loadingHistory')}
+            >
+              <span
+                className={styles['loaderDots']}
+                aria-hidden="true"
+              >
+                <span />
+                <span />
+                <span />
+              </span>
+            </li>
+          )}
           {messages.map((message) => (
             <Fragment key={message.idMessage}>
               {message.idMessage === dividerBeforeId && (

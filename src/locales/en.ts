@@ -46,6 +46,7 @@ export const en = {
     back: 'Back to chats',
     unreadCount: '{{count}} unread',
     newMessages: 'Unread messages',
+    loadingHistory: 'Loading history',
   },
   newChat: {
     heading: 'New chat',

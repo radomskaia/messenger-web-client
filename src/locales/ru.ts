@@ -46,6 +46,7 @@ export const ru = {
     back: 'К списку чатов',
     unreadCount: '{{count}} непрочитанных',
     newMessages: 'Непрочитанные сообщения',
+    loadingHistory: 'Загрузка истории',
   },
   newChat: {
     heading: 'Новый чат',

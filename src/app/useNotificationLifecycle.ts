@@ -105,13 +105,21 @@ export function useNotificationLifecycle(): void {
       return;
     }
 
-    const load = async () => {
-      const history = await getChatHistory(credentials, activeChatId);
-      const messages = history
-        .map((item) => historyItemToMessage(item))
-        .filter((message): message is Message => message !== null);
+    const chatId = activeChatId;
 
-      useChatsStore.getState().addMessages(messages);
+    const load = async () => {
+      useChatsStore.getState().setHistoryLoading(chatId, true);
+
+      try {
+        const history = await getChatHistory(credentials, chatId);
+        const messages = history
+          .map((item) => historyItemToMessage(item))
+          .filter((message): message is Message => message !== null);
+
+        useChatsStore.getState().addMessages(messages);
+      } finally {
+        useChatsStore.getState().setHistoryLoading(chatId, false);
+      }
     };
 
     void load().catch((error: unknown) => {

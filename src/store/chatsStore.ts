@@ -10,6 +10,7 @@ interface ChatsState {
   activeChatId: string | null;
   unread: Record<string, number>;
   unreadDivider: { chatId: string; beforeId: string } | null;
+  historyLoading: Record<string, boolean>;
   mergeChats: (chats: readonly Chat[]) => void;
   setActiveChat: (chatId: string | null) => void;
   addMessage: (message: Message) => void;
@@ -19,6 +20,7 @@ interface ChatsState {
   incrementUnread: (chatId: string) => void;
   markChatRead: (chatId: string) => void;
   dismissUnreadDivider: () => void;
+  setHistoryLoading: (chatId: string, isLoading: boolean) => void;
   reset: () => void;
 }
 
@@ -36,6 +38,7 @@ export const useChatsStore = create<ChatsState>()((set) => ({
   activeChatId: null,
   unread: {},
   unreadDivider: null,
+  historyLoading: {},
 
   mergeChats: (incoming) => {
     set((state) => {
@@ -108,6 +111,18 @@ export const useChatsStore = create<ChatsState>()((set) => ({
     set({ unreadDivider: null });
   },
 
+  setHistoryLoading: (chatId, isLoading) => {
+    set((state) => {
+      if (isLoading) {
+        return { historyLoading: { ...state.historyLoading, [chatId]: true } };
+      }
+
+      const { [chatId]: _done, ...historyLoading } = state.historyLoading;
+
+      return { historyLoading };
+    });
+  },
+
   addMessage: (message) => {
     set((state) => {
       const existing = state.chats[message.chatId];
@@ -169,6 +184,13 @@ export const useChatsStore = create<ChatsState>()((set) => ({
   },
 
   reset: () => {
-    set({ chats: {}, messages: {}, activeChatId: null, unread: {}, unreadDivider: null });
+    set({
+      chats: {},
+      messages: {},
+      activeChatId: null,
+      unread: {},
+      unreadDivider: null,
+      historyLoading: {},
+    });
   },
 }));

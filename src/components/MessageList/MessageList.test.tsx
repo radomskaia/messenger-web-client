@@ -222,6 +222,23 @@ describe('MessageList', () => {
     expect(useChatsStore.getState().unreadDivider).toBeNull();
   });
 
+  it('shows the history loader while the chat history is loading', () => {
+    useChatsStore.getState().addMessage(message({ chatId: '10' }));
+    useChatsStore.getState().setHistoryLoading('10', true);
+    renderWithProviders(<MessageList chatId="10" />);
+
+    expect(screen.getByRole('status', { name: 'Loading history' })).toBeInTheDocument();
+  });
+
+  it('hides the history loader once loading finishes', () => {
+    useChatsStore.getState().addMessage(message({ chatId: '10' }));
+    renderWithProviders(<MessageList chatId="10" />);
+
+    expect(
+      screen.queryByRole('status', { name: 'Loading history' }),
+    ).not.toBeInTheDocument();
+  });
+
   it('marks the chat read once the bottom is reached', () => {
     vi.useFakeTimers();
 

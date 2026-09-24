@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GreenApiError } from '@/api/errors';
 import * as methods from '@/api/methods';
-import type { ChatItem } from '@/api/types';
+import type { ChatHistoryItem, ChatItem } from '@/api/types';
 import { useAuthStore } from '@/store/authStore';
 import { useChatsStore } from '@/store/chatsStore';
 import { useConnectionStore } from '@/store/connectionStore';
@@ -236,6 +236,49 @@ describe('useNotificationLifecycle', () => {
 
     await waitFor(() => {
       expect(receive).toHaveBeenCalled();
+    });
+  });
+
+  it('flags the active chat while its history loads and clears it once done', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockReturnValue(
+      new Promise(() => {
+        // Never resolves; isolate the history effect from the poll loop.
+      }),
+    );
+    const history = deferred<ChatHistoryItem[]>();
+    vi.spyOn(methods, 'getChatHistory').mockReturnValue(history.promise);
+    useChatsStore.getState().setActiveChat('10');
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useChatsStore.getState().historyLoading['10']).toBe(true);
+    });
+
+    history.resolve([]);
+
+    await waitFor(() => {
+      expect(useChatsStore.getState().historyLoading['10']).toBeUndefined();
+    });
+  });
+
+  it('clears the history flag even when the load fails', async () => {
+    vi.spyOn(methods, 'receiveNotification').mockReturnValue(
+      new Promise(() => {
+        // Never resolves; isolate the history effect from the poll loop.
+      }),
+    );
+    vi.spyOn(methods, 'getChatHistory').mockRejectedValue(new Error('offline'));
+    useChatsStore.getState().setActiveChat('10');
+
+    renderHook(() => {
+      useNotificationLifecycle();
+    });
+
+    await waitFor(() => {
+      expect(useChatsStore.getState().historyLoading['10']).toBeUndefined();
     });
   });
 

@@ -338,3 +338,19 @@ describe('chatsStore.unread', () => {
     expect(useChatsStore.getState().unreadDivider).toBeNull();
   });
 });
+
+describe('chatsStore.historyLoading', () => {
+  it('marks a chat as loading its history and then clears it', () => {
+    useChatsStore.getState().setHistoryLoading('10', true);
+    expect(useChatsStore.getState().historyLoading['10']).toBe(true);
+
+    useChatsStore.getState().setHistoryLoading('10', false);
+    expect(useChatsStore.getState().historyLoading['10']).toBeUndefined();
+  });
+
+  it('tracks loading per chat, so one chat does not flag another', () => {
+    useChatsStore.getState().setHistoryLoading('10', true);
+
+    expect(useChatsStore.getState().historyLoading['20']).toBeUndefined();
+  });
+});
