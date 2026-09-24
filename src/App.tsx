@@ -9,16 +9,18 @@ export function App() {
   useAppliedTheme();
   const signOut = useAuthStore((state) => state.signOut);
 
-  return credentials === null ? (
-    <LoginPage />
-  ) : (
+  return credentials ? (
     <SessionGate>
       <button
         type="button"
-        onClick={signOut}
+        onClick={() => {
+          signOut();
+        }}
       >
         signOut
       </button>
     </SessionGate>
+  ) : (
+    <LoginPage />
   );
 }

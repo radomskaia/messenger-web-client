@@ -108,11 +108,15 @@ export async function getChatHistory(
   return (response ?? []).filter((item) => isChatHistoryItem(item));
 }
 
-export async function getChatList(credentials: Credentials): Promise<ChatItem[]> {
+export async function getChatList(
+  credentials: Credentials,
+  options: { signal?: AbortSignal } = {},
+): Promise<ChatItem[]> {
   const response = await request<ChatItem[]>({
     credentials,
     method: 'GET',
     endpoint: 'getChats',
+    ...(options.signal !== undefined && { signal: options.signal }),
   });
 
   return (response ?? []).filter((item) => isChatItem(item));

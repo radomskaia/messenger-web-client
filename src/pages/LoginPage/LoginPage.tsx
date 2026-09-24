@@ -16,6 +16,7 @@ export function LoginPage() {
   const { t } = useTranslation();
   const signIn = useAuthStore((state) => state.signIn);
   const { dialog, checkInstance } = useInstanceCheck();
+  const signOutReason = useAuthStore((state) => state.signOutReason);
   const idFieldId = useId();
   const tokenFieldId = useId();
   const [idInstance, setIdInstance] = useState('');
@@ -72,7 +73,7 @@ export function LoginPage() {
     const trimmedId = idInstance.trim();
     const trimmedToken = apiTokenInstance.trim();
 
-    if (trimmedId === '' || trimmedToken === '') {
+    if (!trimmedId || !trimmedToken) {
       showError(t('auth.required'));
 
       return;
@@ -143,13 +144,15 @@ export function LoginPage() {
           }}
         />
 
-        {error !== null && (
+        {(error ?? signOutReason) && (
           <p
-            key={error.attempt}
+            key={error?.attempt}
             className={styles['error']}
             role="alert"
           >
-            {error.message}
+            {error === null
+              ? (t as (key: string) => string)(signOutReason ?? '')
+              : error.message}
           </p>
         )}
 

@@ -20,7 +20,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (credentials === null || isVerified) {
+    if (!credentials || isVerified) {
       return;
     }
 
@@ -35,9 +35,13 @@ export function SessionGate({ children }: { children: ReactNode }) {
           break;
         }
 
-        case 'declined':
+        case 'declined': {
+          signOut('auth.webhookDeclined');
+          break;
+        }
+
         case 'rejected': {
-          signOut();
+          signOut('auth.unauthorized');
           break;
         }
 
@@ -59,11 +63,11 @@ export function SessionGate({ children }: { children: ReactNode }) {
     };
   }, [credentials, isVerified, attempt, markVerified, signOut, checkInstance]);
 
-  if (credentials === null || isVerified) {
+  if (!credentials || isVerified) {
     return children;
   }
 
-  if (failure === null) {
+  if (!failure) {
     return (
       <main className={styles['page']}>
         <p
@@ -99,7 +103,9 @@ export function SessionGate({ children }: { children: ReactNode }) {
         <button
           className={styles['secondary']}
           type="button"
-          onClick={signOut}
+          onClick={() => {
+            signOut();
+          }}
         >
           {t('session.signOut')}
         </button>
