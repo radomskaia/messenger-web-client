@@ -48,9 +48,18 @@ export const ru = {
     notFound: 'Аккаунт Telegram с таким номером не найден',
     failed: 'Не удалось проверить номер, попробуйте ещё раз',
   },
+  composer: {
+    placeholder: 'Напишите сообщение',
+    send: 'Отправить',
+  },
   connection: {
     online: 'На связи',
     reconnecting: 'Переподключение…',
+  },
+  message: {
+    failed: 'Не отправлено',
+    you: 'Вы',
+    contact: 'Собеседник',
   },
   settings: {
     language: 'Язык',

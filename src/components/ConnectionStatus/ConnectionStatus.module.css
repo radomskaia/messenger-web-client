@@ -1,0 +1,10 @@
+.banner {
+  margin: 0;
+  padding: 6px var(--space-page);
+
+  font-size: 14px;
+  color: var(--color-on-accent);
+  text-align: center;
+
+  background: var(--color-danger);
+}

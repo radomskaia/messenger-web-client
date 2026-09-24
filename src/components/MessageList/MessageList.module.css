@@ -1,0 +1,84 @@
+.container {
+  position: relative;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  min-height: 0;
+}
+
+.scroll {
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+
+  overflow-y: auto;
+  flex: 1;
+
+  padding: var(--space-page);
+}
+
+.scroll[data-scrolling] {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: transparent;
+}
+
+.scroll[data-scrolling]::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  width: 100%;
+  max-width: var(--width-thread);
+  margin: 0 auto;
+  padding: 0;
+
+  list-style: none;
+}
+
+.toBottom {
+  cursor: pointer;
+
+  position: absolute;
+  right: var(--space-page);
+  bottom: var(--space-page);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+
+  background: var(--color-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+}
+
+.toBottom:hover {
+  color: var(--color-accent);
+}
+
+.toBottom:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

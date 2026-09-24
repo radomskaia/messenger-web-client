@@ -47,9 +47,18 @@ export const en = {
     notFound: 'No Telegram account found for this number',
     failed: 'Could not check the number, try again',
   },
+  composer: {
+    placeholder: 'Write a message',
+    send: 'Send',
+  },
   connection: {
     online: 'Connected',
     reconnecting: 'Reconnecting…',
+  },
+  message: {
+    failed: 'Not sent',
+    you: 'You',
+    contact: 'Contact',
   },
   settings: {
     language: 'Language',
