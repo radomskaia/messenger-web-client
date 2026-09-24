@@ -115,11 +115,15 @@ export async function getChatList(credentials: Credentials): Promise<ChatItem[]>
   return (response ?? []).filter((item) => isChatItem(item));
 }
 
-export async function getSettings(credentials: Credentials): Promise<InstanceSettings> {
+export async function getSettings(
+  credentials: Credentials,
+  options: { signal?: AbortSignal } = {},
+): Promise<InstanceSettings> {
   const response = await request<InstanceSettings>({
     credentials,
     method: 'GET',
     endpoint: 'getSettings',
+    ...(options.signal !== undefined && { signal: options.signal }),
   });
 
   if (!isInstanceSettings(response)) {
@@ -132,6 +136,7 @@ export async function getSettings(credentials: Credentials): Promise<InstanceSet
 export async function setSettings(
   credentials: Credentials,
   patch: SettingsPatch,
+  options: { signal?: AbortSignal } = {},
 ): Promise<void> {
   if (Object.keys(patch).length === 0) {
     throw new Error('setSettings needs at least one setting to change');
@@ -142,6 +147,7 @@ export async function setSettings(
     method: 'POST',
     endpoint: 'setSettings',
     body: patch,
+    ...(options.signal !== undefined && { signal: options.signal }),
   });
 
   if (!isSetSettingsResponse(response)) {

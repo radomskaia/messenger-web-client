@@ -1,3 +1,4 @@
+import { SessionGate } from '@/app/SessionGate';
 import { useAppliedTheme } from '@/app/useAppliedTheme';
 import { LoginPage } from '@/pages/LoginPage/LoginPage';
 import { useAuthStore } from '@/store/authStore';
@@ -11,11 +12,13 @@ export function App() {
   return credentials === null ? (
     <LoginPage />
   ) : (
-    <button
-      type="button"
-      onClick={signOut}
-    >
-      signOut
-    </button>
+    <SessionGate>
+      <button
+        type="button"
+        onClick={signOut}
+      >
+        signOut
+      </button>
+    </SessionGate>
   );
 }

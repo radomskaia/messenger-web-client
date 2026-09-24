@@ -1,0 +1,14 @@
+.paragraph {
+  margin: 0;
+}
+
+.url {
+  margin: 8px 0 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+
+  background: var(--color-background);
+}

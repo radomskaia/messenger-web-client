@@ -6,7 +6,9 @@ import type { Credentials } from '@/domain/types';
 
 interface AuthState {
   credentials: Credentials | null;
+  isVerified: boolean;
   signIn: (credentials: Credentials) => void;
+  markVerified: () => void;
   signOut: () => void;
 }
 
@@ -23,22 +25,28 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       credentials: null,
+      isVerified: false,
       signIn: (credentials) => {
-        set({ credentials });
+        set({ credentials, isVerified: true });
+      },
+      markVerified: () => {
+        set({ isVerified: true });
       },
       signOut: () => {
-        set({ credentials: null });
+        set({ credentials: null, isVerified: false });
       },
     }),
     {
       name: 'messenger:auth',
       version: 1,
+      partialize: (state) => ({ credentials: state.credentials }),
       merge: (persisted, current) => {
         const state = (persisted ?? {}) as Partial<AuthState>;
 
         return {
           ...current,
           credentials: isCredentials(state.credentials) ? state.credentials : null,
+          isVerified: false,
         };
       },
     },

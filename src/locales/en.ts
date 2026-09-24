@@ -23,6 +23,8 @@ export const en = {
     hint: 'Credentials are stored in this browser only.',
   },
   session: {
+    checking: 'Checking your GREEN-API instance…',
+    retry: 'Try again',
     signOut: 'Sign out',
   },
 } as const;

@@ -11,7 +11,7 @@ const credentials: Credentials = {
 };
 
 beforeEach(() => {
-  useAuthStore.setState({ credentials: null });
+  useAuthStore.setState({ credentials: null, isVerified: false });
   localStorage.clear();
 });
 
@@ -57,5 +57,33 @@ describe('authStore', () => {
     await useAuthStore.persist.rehydrate();
 
     expect(useAuthStore.getState().credentials).toEqual(credentials);
+  });
+
+  it('treats a sign in as verified, since the login form checks first', () => {
+    useAuthStore.getState().signIn(credentials);
+
+    expect(useAuthStore.getState().isVerified).toBe(true);
+  });
+
+  it('does not trust a restored session until it is checked again', async () => {
+    useAuthStore.getState().signIn(credentials);
+    await useAuthStore.persist.rehydrate();
+
+    expect(useAuthStore.getState().credentials).toEqual(credentials);
+    expect(useAuthStore.getState().isVerified).toBe(false);
+  });
+
+  it('marks a restored session verified', () => {
+    useAuthStore.setState({ credentials, isVerified: false });
+    useAuthStore.getState().markVerified();
+
+    expect(useAuthStore.getState().isVerified).toBe(true);
+  });
+
+  it('drops verification on sign out', () => {
+    useAuthStore.getState().signIn(credentials);
+    useAuthStore.getState().signOut();
+
+    expect(useAuthStore.getState().isVerified).toBe(false);
   });
 });

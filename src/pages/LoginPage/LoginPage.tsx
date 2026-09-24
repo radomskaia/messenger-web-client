@@ -1,6 +1,8 @@
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useInstanceCheck } from '@/app/useInstanceCheck';
+import type { Credentials } from '@/domain/types';
 import { useAuthStore } from '@/store/authStore';
 
 import styles from './LoginPage.module.css';
@@ -12,29 +14,71 @@ const DEFAULT_API_URL = 'https://api.green-api.com';
 export function LoginPage() {
   const { t } = useTranslation();
   const signIn = useAuthStore((state) => state.signIn);
+  const { dialog, checkInstance } = useInstanceCheck();
   const idFieldId = useId();
   const tokenFieldId = useId();
   const [idInstance, setIdInstance] = useState('');
   const [apiTokenInstance, setApiTokenInstance] = useState('');
   const [error, setError] = useState<{ message: string; attempt: number } | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
   // eslint-disable-next-line unicorn/name-replacements
   const failedAttemptsRef = useRef(0);
 
+  const showError = (message: string) => {
+    failedAttemptsRef.current += 1;
+    setError({ message, attempt: failedAttemptsRef.current });
+  };
+
+  const checkAndSignIn = async (credentials: Credentials) => {
+    setIsChecking(true);
+    const outcome = await checkInstance(credentials);
+    setIsChecking(false);
+
+    switch (outcome.status) {
+      case 'ready': {
+        signIn(credentials);
+        break;
+      }
+
+      case 'declined': {
+        showError(t('auth.webhookDeclined'));
+        break;
+      }
+
+      case 'rejected': {
+        showError(t('auth.unauthorized'));
+        break;
+      }
+
+      case 'failed': {
+        showError(t(outcome.reason));
+        break;
+      }
+
+      case 'aborted': {
+        break;
+      }
+    }
+  };
+
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isChecking) {
+      return;
+    }
 
     const trimmedId = idInstance.trim();
     const trimmedToken = apiTokenInstance.trim();
 
     if (trimmedId === '' || trimmedToken === '') {
-      failedAttemptsRef.current += 1;
-      setError({ message: t('auth.required'), attempt: failedAttemptsRef.current });
+      showError(t('auth.required'));
 
       return;
     }
 
     setError(null);
-    signIn({
+    void checkAndSignIn({
       idInstance: trimmedId,
       apiTokenInstance: trimmedToken,
       apiUrl: DEFAULT_API_URL,
@@ -95,12 +139,14 @@ export function LoginPage() {
         <button
           className={styles['submit']}
           type="submit"
+          disabled={isChecking}
         >
-          {t('auth.submit')}
+          {t(isChecking ? 'auth.checking' : 'auth.submit')}
         </button>
 
         <p className={styles['hint']}>{t('auth.hint')}</p>
       </form>
+      {dialog}
     </main>
   );
 }

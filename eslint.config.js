@@ -141,6 +141,9 @@ export default defineConfig([
         'error',
         { checksVoidReturn: { attributes: false } },
       ],
+      // A switch over a union must name every member, so adding one to the union
+      // points at each switch that now has to handle it.
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
 
       // Components are PascalCase, everything else camelCase.
       'unicorn/filename-case': [
