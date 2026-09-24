@@ -1,7 +1,7 @@
 import { SessionGate } from '@/app/SessionGate';
 import { useAppliedTheme } from '@/app/useAppliedTheme';
 import { useNotificationLifecycle } from '@/app/useNotificationLifecycle';
-import { Sidebar } from '@/components/Sidebar/Sidebar.tsx';
+import { ChatPage } from '@/pages/ChatPage/ChatPage';
 import { LoginPage } from '@/pages/LoginPage/LoginPage';
 import { useAuthStore } from '@/store/authStore';
 
@@ -13,7 +13,7 @@ export function App() {
 
   return credentials ? (
     <SessionGate>
-      <Sidebar />
+      <ChatPage />
     </SessionGate>
   ) : (
     <LoginPage />
