@@ -85,4 +85,26 @@ describe('ChatList', () => {
 
     expect(screen.getByText('🎉')).toBeInTheDocument();
   });
+
+  it('shows an unread badge for a chat with unread messages', () => {
+    useChatsStore
+      .getState()
+      .mergeChats([{ chatId: '10', name: 'Ivan', lastMessageAt: 1 }]);
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().incrementUnread('10');
+    renderWithProviders(<ChatList />);
+
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('hides the badge for the chat that is open', () => {
+    useChatsStore
+      .getState()
+      .mergeChats([{ chatId: '10', name: 'Ivan', lastMessageAt: 1 }]);
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().setActiveChat('10');
+    renderWithProviders(<ChatList />);
+
+    expect(screen.queryByText('1')).not.toBeInTheDocument();
+  });
 });

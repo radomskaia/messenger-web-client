@@ -264,3 +264,77 @@ describe('chatsStore storage', () => {
     expect(localStorage.getItem('messenger:chats')).toBeNull();
   });
 });
+
+describe('chatsStore.unread', () => {
+  it('counts unread per chat', () => {
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().incrementUnread('20');
+
+    expect(useChatsStore.getState().unread['10']).toBe(2);
+    expect(useChatsStore.getState().unread['20']).toBe(1);
+  });
+
+  it('clears a chat unread count when it is marked read', () => {
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().markChatRead('10');
+
+    expect(useChatsStore.getState().unread['10']).toBeUndefined();
+  });
+
+  it('drops a divider before the first unread message when the chat opens', () => {
+    useChatsStore
+      .getState()
+      .addMessages([
+        message({ idMessage: 'a', chatId: '10', timestamp: 1 }),
+        message({ idMessage: 'b', chatId: '10', timestamp: 2 }),
+        message({ idMessage: 'c', chatId: '10', timestamp: 3 }),
+      ]);
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().incrementUnread('10');
+
+    useChatsStore.getState().setActiveChat('10');
+
+    expect(useChatsStore.getState().unreadDivider).toEqual({
+      chatId: '10',
+      beforeId: 'b',
+    });
+  });
+
+  it('leaves no divider when the opened chat has nothing unread', () => {
+    useChatsStore.getState().addMessage(message({ chatId: '10' }));
+
+    useChatsStore.getState().setActiveChat('10');
+
+    expect(useChatsStore.getState().unreadDivider).toBeNull();
+  });
+
+  it('does not clear the unread count merely by opening the chat', () => {
+    useChatsStore.getState().addMessage(message({ chatId: '10' }));
+    useChatsStore.getState().incrementUnread('10');
+
+    useChatsStore.getState().setActiveChat('10');
+
+    expect(useChatsStore.getState().unread['10']).toBe(1);
+  });
+
+  it('dismisses the divider on demand', () => {
+    useChatsStore.getState().addMessage(message({ idMessage: 'a', chatId: '10' }));
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().setActiveChat('10');
+
+    useChatsStore.getState().dismissUnreadDivider();
+
+    expect(useChatsStore.getState().unreadDivider).toBeNull();
+  });
+
+  it('clears the divider when leaving the chat', () => {
+    useChatsStore.getState().addMessage(message({ idMessage: 'a', chatId: '10' }));
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().setActiveChat('10');
+
+    useChatsStore.getState().setActiveChat(null);
+
+    expect(useChatsStore.getState().unreadDivider).toBeNull();
+  });
+});

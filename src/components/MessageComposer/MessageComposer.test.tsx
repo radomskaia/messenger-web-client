@@ -126,4 +126,24 @@ describe('MessageComposer', () => {
 
     expect(send).toHaveBeenCalledTimes(1);
   });
+
+  it('dismisses the unread divider when the field is focused', async () => {
+    const user = userEvent.setup();
+    useChatsStore.getState().addMessage({
+      idMessage: 'a',
+      chatId: '10',
+      direction: 'incoming',
+      text: 'hi',
+      timestamp: 1,
+      status: 'sent',
+    });
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().setActiveChat('10');
+    expect(useChatsStore.getState().unreadDivider).not.toBeNull();
+    renderWithProviders(<MessageComposer chatId="10" />);
+
+    await user.click(screen.getByRole('textbox'));
+
+    expect(useChatsStore.getState().unreadDivider).toBeNull();
+  });
 });

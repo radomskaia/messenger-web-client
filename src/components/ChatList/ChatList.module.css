@@ -64,6 +64,7 @@
 
 .text {
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
 }
@@ -91,4 +92,36 @@
   padding: var(--space-page);
   color: var(--color-text-secondary);
   text-align: center;
+}
+
+.badge {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-on-accent);
+
+  background: var(--color-accent);
+
+  animation: badge-in 0.15s ease-out;
+}
+
+@keyframes badge-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

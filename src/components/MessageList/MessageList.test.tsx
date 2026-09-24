@@ -15,6 +15,18 @@ import type { ReactElement } from 'react';
 // rerender() replaces the whole previously rendered tree, so the provider must be
 // included again on every call or React sees a different root element type and
 // remounts everything — which would make every scroll assertion below vacuous.
+const rect = (top: number, bottom: number): DOMRect =>
+  ({
+    top,
+    bottom,
+    left: 0,
+    right: 0,
+    width: 0,
+    height: bottom - top,
+    x: 0,
+    y: top,
+  }) as DOMRect;
+
 function withProviders(ui: ReactElement) {
   return <I18nextProvider i18n={i18next}>{ui}</I18nextProvider>;
 }
@@ -81,21 +93,17 @@ describe('MessageList', () => {
     }
 
     const { rerender } = renderWithProviders(<MessageList chatId="10" />);
-    // Read through an index signature, not a direct member access: the DOM lib
-    // types scrollIntoView as a bound method, which trips unbound-method even
-    // though this is a read of a plain vi.fn() mock, not a real method call.
-    const scrollIntoViewMock = (
-      HTMLElement.prototype as unknown as Record<string, unknown>
-    )['scrollIntoView'] as ReturnType<typeof vi.fn>;
+    const scroll = screen.getByTestId('message-scroll');
+    // Stand in for a tall thread; the list keeps the container pinned to the end.
+    Object.defineProperty(scroll, 'scrollHeight', { value: 1000, configurable: true });
 
-    scrollIntoViewMock.mockClear();
     useChatsStore
       .getState()
       .addMessage(message({ idMessage: 'newest', timestamp: MESSAGES_PER_CHAT_LIMIT }));
     rerender(withProviders(<MessageList chatId="10" />));
 
     expect(useChatsStore.getState().messages['10']).toHaveLength(MESSAGES_PER_CHAT_LIMIT);
-    expect(scrollIntoViewMock).toHaveBeenCalled();
+    expect(scroll.scrollTop).toBe(1000);
   });
 
   it('reveals the to-bottom button only once scrolling pauses away from the bottom', () => {
@@ -140,6 +148,29 @@ describe('MessageList', () => {
     }
   });
 
+  it('re-pins to the bottom when older history loads in above the view', () => {
+    // The chat opens showing only the live messages, then history for it
+    // arrives and is merged in ahead of them (older timestamps). The newest
+    // message — and so the list's last id — is unchanged by that prepend.
+    useChatsStore
+      .getState()
+      .addMessage(message({ idMessage: 'live', chatId: '10', timestamp: 100 }));
+    const { rerender } = renderWithProviders(<MessageList chatId="10" />);
+    const scroll = screen.getByTestId('message-scroll');
+    // Prepending older messages makes the thread tall enough to scroll.
+    Object.defineProperty(scroll, 'scrollHeight', { value: 1000, configurable: true });
+
+    useChatsStore
+      .getState()
+      .addMessages([
+        message({ idMessage: 'old-1', chatId: '10', timestamp: 1 }),
+        message({ idMessage: 'old-2', chatId: '10', timestamp: 2 }),
+      ]);
+    rerender(withProviders(<MessageList chatId="10" />));
+
+    expect(scroll.scrollTop).toBe(1000);
+  });
+
   it('scrolls when switching to a chat with the same message count', () => {
     useChatsStore
       .getState()
@@ -148,16 +179,67 @@ describe('MessageList', () => {
       .getState()
       .addMessage(message({ idMessage: 'B', chatId: '20', timestamp: 1 }));
     const { rerender } = renderWithProviders(<MessageList chatId="10" />);
-    // Read through an index signature, not a direct member access: the DOM lib
-    // types scrollIntoView as a bound method, which trips unbound-method even
-    // though this is a read of a plain vi.fn() mock, not a real method call.
-    const scrollIntoViewMock = (
-      HTMLElement.prototype as unknown as Record<string, unknown>
-    )['scrollIntoView'] as ReturnType<typeof vi.fn>;
+    const scroll = screen.getByTestId('message-scroll');
+    Object.defineProperty(scroll, 'scrollHeight', { value: 1000, configurable: true });
 
-    scrollIntoViewMock.mockClear();
     rerender(withProviders(<MessageList chatId="20" />));
 
-    expect(scrollIntoViewMock).toHaveBeenCalled();
+    expect(scroll.scrollTop).toBe(1000);
+  });
+
+  it('draws the unread divider before the first unread message', () => {
+    useChatsStore
+      .getState()
+      .addMessages([
+        message({ idMessage: 'a', chatId: '10', timestamp: 1 }),
+        message({ idMessage: 'b', chatId: '10', timestamp: 2 }),
+      ]);
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().setActiveChat('10');
+    renderWithProviders(<MessageList chatId="10" />);
+
+    expect(screen.getByText('Unread messages')).toBeInTheDocument();
+  });
+
+  it('dismisses the divider once it scrolls out of view', () => {
+    useChatsStore
+      .getState()
+      .addMessages([
+        message({ idMessage: 'a', chatId: '10', timestamp: 1 }),
+        message({ idMessage: 'b', chatId: '10', timestamp: 2 }),
+      ]);
+    useChatsStore.getState().incrementUnread('10');
+    useChatsStore.getState().setActiveChat('10');
+    renderWithProviders(<MessageList chatId="10" />);
+    const scroll = screen.getByTestId('message-scroll');
+    const divider = screen.getByText('Unread messages');
+
+    // Container occupies 0–400; the divider sits below it, out of view.
+    scroll.getBoundingClientRect = () => rect(0, 400);
+    divider.getBoundingClientRect = () => rect(500, 520);
+    fireEvent.scroll(scroll);
+
+    expect(useChatsStore.getState().unreadDivider).toBeNull();
+  });
+
+  it('marks the chat read once the bottom is reached', () => {
+    vi.useFakeTimers();
+
+    try {
+      useChatsStore.getState().addMessage(message({ chatId: '10' }));
+      useChatsStore.getState().incrementUnread('10');
+      renderWithProviders(<MessageList chatId="10" />);
+      const scroll = screen.getByTestId('message-scroll');
+
+      // jsdom reports zero metrics, i.e. already at the bottom.
+      fireEvent.scroll(scroll);
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      expect(useChatsStore.getState().unread['10']).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -8,12 +8,17 @@ interface ChatsState {
   chats: Record<string, Chat>;
   messages: Record<string, Message[]>;
   activeChatId: string | null;
+  unread: Record<string, number>;
+  unreadDivider: { chatId: string; beforeId: string } | null;
   mergeChats: (chats: readonly Chat[]) => void;
   setActiveChat: (chatId: string | null) => void;
   addMessage: (message: Message) => void;
   addMessages: (messages: readonly Message[]) => void;
   replaceMessageId: (chatId: string, temporaryId: string, message: Message) => void;
   removeMessage: (chatId: string, idMessage: string) => void;
+  incrementUnread: (chatId: string) => void;
+  markChatRead: (chatId: string) => void;
+  dismissUnreadDivider: () => void;
   reset: () => void;
 }
 
@@ -29,6 +34,8 @@ export const useChatsStore = create<ChatsState>()((set) => ({
   chats: {},
   messages: {},
   activeChatId: null,
+  unread: {},
+  unreadDivider: null,
 
   mergeChats: (incoming) => {
     set((state) => {
@@ -60,7 +67,45 @@ export const useChatsStore = create<ChatsState>()((set) => ({
   },
 
   setActiveChat: (chatId) => {
-    set({ activeChatId: chatId });
+    set((state) => {
+      if (!chatId) {
+        return { activeChatId: null, unreadDivider: null };
+      }
+
+      const count = state.unread[chatId] ?? 0;
+      let firstUnread: Message | undefined;
+
+      if (count > 0) {
+        firstUnread = state.messages[chatId]?.at(-count);
+      }
+
+      return {
+        activeChatId: chatId,
+        unreadDivider: firstUnread ? { chatId, beforeId: firstUnread.idMessage } : null,
+      };
+    });
+  },
+
+  incrementUnread: (chatId) => {
+    set((state) => ({
+      unread: { ...state.unread, [chatId]: (state.unread[chatId] ?? 0) + 1 },
+    }));
+  },
+
+  markChatRead: (chatId) => {
+    set((state) => {
+      if (!Object.hasOwn(state.unread, chatId)) {
+        return {};
+      }
+
+      const { [chatId]: _read, ...unread } = state.unread;
+
+      return { unread };
+    });
+  },
+
+  dismissUnreadDivider: () => {
+    set({ unreadDivider: null });
   },
 
   addMessage: (message) => {
@@ -124,6 +169,6 @@ export const useChatsStore = create<ChatsState>()((set) => ({
   },
 
   reset: () => {
-    set({ chats: {}, messages: {}, activeChatId: null });
+    set({ chats: {}, messages: {}, activeChatId: null, unread: {}, unreadDivider: null });
   },
 }));

@@ -82,3 +82,16 @@
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+.divider {
+  align-self: center;
+
+  margin: 8px 0;
+  padding: 2px 12px;
+  border-radius: var(--radius-control);
+
+  font-size: 13px;
+  color: var(--color-text-secondary);
+
+  background: var(--color-surface);
+}

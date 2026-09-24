@@ -44,6 +44,8 @@ export const ru = {
     selectPrompt: 'Выберите чат, чтобы начать переписку',
     toBottom: 'К последним сообщениям',
     back: 'К списку чатов',
+    unreadCount: '{{count}} непрочитанных',
+    newMessages: 'Непрочитанные сообщения',
   },
   newChat: {
     heading: 'Новый чат',

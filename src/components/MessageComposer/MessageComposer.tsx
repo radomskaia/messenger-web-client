@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAutoHideScrollbar } from '@/app/useAutoHideScrollbar';
 import { sendTextMessage } from '@/services/sendTextMessage';
 import { useAuthStore } from '@/store/authStore';
+import { useChatsStore } from '@/store/chatsStore';
 
 import styles from './MessageComposer.module.css';
 
@@ -22,6 +23,7 @@ export function MessageComposer({ chatId }: MessageComposerProperties) {
   const credentials = useAuthStore((state) => state.credentials);
   const [text, setText] = useState('');
   const fieldRef = useAutoHideScrollbar<HTMLTextAreaElement>();
+  const dismissUnreadDivider = useChatsStore((state) => state.dismissUnreadDivider);
 
   const length = text.trim().length;
   const isTooLong = length > MESSAGE_LENGTH_LIMIT;
@@ -75,6 +77,7 @@ export function MessageComposer({ chatId }: MessageComposerProperties) {
         value={text}
         rows={1}
         placeholder={t('composer.placeholder')}
+        onFocus={dismissUnreadDivider}
         onKeyDown={handleKeyDown}
         onChange={(event) => {
           setText(event.target.value);

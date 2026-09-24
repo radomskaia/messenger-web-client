@@ -89,3 +89,25 @@ describe('handleNotification', () => {
     expect(useChatsStore.getState().chats['10000000']?.name).toBeUndefined();
   });
 });
+
+describe('handleNotification unread', () => {
+  it('raises the unread count for an incoming message to a chat that is not open', () => {
+    handleNotification(notification);
+
+    expect(useChatsStore.getState().unread['10000000']).toBe(1);
+  });
+
+  it('does not count an incoming message for the chat that is open', () => {
+    useChatsStore.getState().setActiveChat('10000000');
+
+    handleNotification(notification);
+
+    expect(useChatsStore.getState().unread['10000000']).toBeUndefined();
+  });
+
+  it('does not count an outgoing echo', () => {
+    handleNotification({ ...notification, typeWebhook: 'outgoingMessageReceived' });
+
+    expect(useChatsStore.getState().unread['10000000']).toBeUndefined();
+  });
+});

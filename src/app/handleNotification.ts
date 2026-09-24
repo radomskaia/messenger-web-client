@@ -10,14 +10,18 @@ export function handleNotification(body: unknown): void {
   const message = notificationToMessage(body);
   const store = useChatsStore.getState();
 
+  const isIncoming = body.typeWebhook === 'incomingMessageReceived';
+
   store.mergeChats([
     {
       chatId: message.chatId,
-      ...(body.typeWebhook === 'incomingMessageReceived' && {
-        name: body.senderData.senderName,
-      }),
+      ...(isIncoming && { name: body.senderData.senderName }),
       lastMessageAt: message.timestamp,
     },
   ]);
   store.addMessage(message);
+
+  if (isIncoming && message.chatId !== store.activeChatId) {
+    store.incrementUnread(message.chatId);
+  }
 }

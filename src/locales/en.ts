@@ -44,6 +44,8 @@ export const en = {
     selectPrompt: 'Select a chat to start messaging',
     toBottom: 'Scroll to the latest messages',
     back: 'Back to chats',
+    unreadCount: '{{count}} unread',
+    newMessages: 'Unread messages',
   },
   newChat: {
     heading: 'New chat',

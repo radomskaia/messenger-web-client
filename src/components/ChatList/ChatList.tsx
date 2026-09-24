@@ -17,6 +17,7 @@ export function ChatList() {
   const chats = useChatsStore((state) => state.chats);
   const activeChatId = useChatsStore((state) => state.activeChatId);
   const messages = useChatsStore((state) => state.messages);
+  const unread = useChatsStore((state) => state.unread);
   const setActiveChat = useChatsStore((state) => state.setActiveChat);
 
   const ordered = Object.values(chats).toSorted(
@@ -33,6 +34,7 @@ export function ChatList() {
         const chatMessages = messages[chat.chatId] ?? [];
         const title = chatTitle(chat);
         const preview = chatMessages.at(-1)?.text ?? '';
+        const unreadCount = chat.chatId === activeChatId ? 0 : (unread[chat.chatId] ?? 0);
 
         return (
           <li key={chat.chatId}>
@@ -56,6 +58,14 @@ export function ChatList() {
                 <span className={styles['title']}>{title}</span>
                 <span className={styles['preview']}>{preview}</span>
               </span>
+              {unreadCount > 0 && (
+                <span
+                  className={styles['badge']}
+                  aria-label={t('chats.unreadCount', { count: unreadCount })}
+                >
+                  {unreadCount}
+                </span>
+              )}
             </button>
           </li>
         );

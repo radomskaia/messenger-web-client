@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAutoHideScrollbar } from '@/app/useAutoHideScrollbar';
@@ -17,16 +17,44 @@ interface MessageListProperties {
 export function MessageList({ chatId }: MessageListProperties) {
   const { t } = useTranslation();
   const messages = useChatsStore((state) => state.messages[chatId]) ?? [];
+  const unreadDivider = useChatsStore((state) => state.unreadDivider);
+  const markChatRead = useChatsStore((state) => state.markChatRead);
+  const dismissUnreadDivider = useChatsStore((state) => state.dismissUnreadDivider);
   const scrollRef = useAutoHideScrollbar<HTMLDivElement>();
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const dividerRef = useRef<HTMLLIElement>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const positionedChatRef = useRef<string | undefined>(undefined);
+  const previousLastIdRef = useRef<string | undefined>(undefined);
   const [showToBottom, setShowToBottom] = useState(false);
 
+  const messageCount = messages.length;
   const lastMessageId = messages.at(-1)?.idMessage;
+  const dividerBeforeId =
+    unreadDivider?.chatId === chatId ? unreadDivider.beforeId : null;
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: 'end' });
-  }, [chatId, lastMessageId]);
+    const element = scrollRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const isNewChat = positionedChatRef.current !== chatId;
+    const isNewMessage = !isNewChat && lastMessageId !== previousLastIdRef.current;
+
+    positionedChatRef.current = chatId;
+    previousLastIdRef.current = lastMessageId;
+
+    if (!isNewMessage && dividerRef.current) {
+      element.scrollTop +=
+        dividerRef.current.getBoundingClientRect().top -
+        element.getBoundingClientRect().top;
+
+      return;
+    }
+
+    element.scrollTop = element.scrollHeight;
+  }, [chatId, lastMessageId, messageCount, scrollRef]);
 
   useEffect(
     () => () => {
@@ -39,22 +67,47 @@ export function MessageList({ chatId }: MessageListProperties) {
     setShowToBottom(false);
     clearTimeout(idleTimerRef.current);
 
-    idleTimerRef.current = setTimeout(() => {
-      const element = scrollRef.current;
+    const element = scrollRef.current;
+    const divider = dividerRef.current;
 
+    if (element && divider) {
+      const dividerRect = divider.getBoundingClientRect();
+      const viewport = element.getBoundingClientRect();
+
+      if (dividerRect.bottom < viewport.top || dividerRect.top > viewport.bottom) {
+        dismissUnreadDivider();
+      }
+    }
+
+    idleTimerRef.current = setTimeout(() => {
       if (!element) {
         return;
       }
 
       const distanceFromBottom =
         element.scrollHeight - element.scrollTop - element.clientHeight;
+      const isAtBottom = distanceFromBottom <= AT_BOTTOM_THRESHOLD;
 
-      setShowToBottom(distanceFromBottom > AT_BOTTOM_THRESHOLD);
+      setShowToBottom(!isAtBottom);
+
+      if (isAtBottom) {
+        markChatRead(chatId);
+      }
     }, SCROLL_IDLE_MS);
   };
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    const element = scrollRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    if (typeof element.scrollTo === 'function') {
+      element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
+    } else {
+      element.scrollTop = element.scrollHeight;
+    }
   };
 
   return (
@@ -67,13 +120,19 @@ export function MessageList({ chatId }: MessageListProperties) {
       >
         <ul className={styles['list']}>
           {messages.map((message) => (
-            <MessageBubble
-              key={message.idMessage}
-              message={message}
-            />
+            <Fragment key={message.idMessage}>
+              {message.idMessage === dividerBeforeId && (
+                <li
+                  ref={dividerRef}
+                  className={styles['divider']}
+                >
+                  {t('chats.newMessages')}
+                </li>
+              )}
+              <MessageBubble message={message} />
+            </Fragment>
           ))}
         </ul>
-        <div ref={bottomRef} />
       </div>
 
       {showToBottom && (
