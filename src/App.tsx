@@ -1,5 +1,6 @@
 import { SessionGate } from '@/app/SessionGate';
 import { useAppliedTheme } from '@/app/useAppliedTheme';
+import { Sidebar } from '@/components/Sidebar/Sidebar.tsx';
 import { LoginPage } from '@/pages/LoginPage/LoginPage';
 import { useAuthStore } from '@/store/authStore';
 
@@ -7,18 +8,10 @@ export function App() {
   const credentials = useAuthStore((state) => state.credentials);
 
   useAppliedTheme();
-  const signOut = useAuthStore((state) => state.signOut);
 
   return credentials ? (
     <SessionGate>
-      <button
-        type="button"
-        onClick={() => {
-          signOut();
-        }}
-      >
-        signOut
-      </button>
+      <Sidebar />
     </SessionGate>
   ) : (
     <LoginPage />

@@ -44,7 +44,7 @@ describe('App', () => {
     useAuthStore.setState({ credentials, isVerified: true });
     renderWithProviders(<App />);
 
-    expect(screen.getByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New chat' })).toBeInTheDocument();
     expect(getSettings).not.toHaveBeenCalled();
   });
 
@@ -58,9 +58,9 @@ describe('App', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'Checking your GREEN-API instance',
     );
-    expect(screen.queryByRole('button', { name: 'signOut' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'New chat' })).not.toBeInTheDocument();
 
-    expect(await screen.findByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'New chat' })).toBeInTheDocument();
     expect(getSettings).toHaveBeenCalledWith(credentials, expect.anything());
     expect(useAuthStore.getState().isVerified).toBe(true);
   });
@@ -108,7 +108,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(await screen.findByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'New chat' })).toBeInTheDocument();
   });
 
   it('lets the user sign out instead of retrying', async () => {
