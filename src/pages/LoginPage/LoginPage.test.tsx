@@ -187,6 +187,16 @@ describe('LoginPage', () => {
     expect(getSettings).toHaveBeenCalledTimes(1);
   });
 
+  it('points to the GREEN-API console for creating an instance or finding its credentials', () => {
+    renderWithProviders(<LoginPage />);
+
+    const link = screen.getByRole('link', { name: 'GREEN-API console' });
+    expect(link).toHaveAttribute('href', 'https://console.green-api.com/');
+    // A new tab, so whatever is already typed into the form survives.
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
+  });
+
   it('masks the api token, which is a secret typed on screen', () => {
     renderWithProviders(<LoginPage />);
 

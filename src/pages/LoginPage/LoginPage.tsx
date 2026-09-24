@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { useInstanceCheck } from '@/app/useInstanceCheck';
 import type { Credentials } from '@/domain/types';
@@ -10,6 +10,7 @@ import styles from './LoginPage.module.css';
 import type { SubmitEvent } from 'react';
 
 const DEFAULT_API_URL = 'https://api.green-api.com';
+const CONSOLE_URL = 'https://console.green-api.com/';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -92,6 +93,22 @@ export function LoginPage() {
         onSubmit={handleSubmit}
       >
         <h1 className={styles['heading']}>{t('auth.heading')}</h1>
+        <p className={styles['intro']}>
+          <Trans
+            i18nKey="auth.console"
+            components={{
+              consoleLink: (
+                // eslint-disable-next-line jsx-a11y/anchor-has-content -- Trans fills it in.
+                <a
+                  className={styles['link']}
+                  href={CONSOLE_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                />
+              ),
+            }}
+          />
+        </p>
 
         <label
           className={styles['label']}

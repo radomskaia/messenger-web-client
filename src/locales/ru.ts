@@ -22,6 +22,8 @@ export const ru = {
     webhookDeclined:
       'Сообщения по-прежнему уходят на другой адрес, поэтому здесь их не показать.',
     hint: 'Учётные данные хранятся только в этом браузере.',
+    console:
+      'idInstance и apiTokenInstance есть в <consoleLink>консоли GREEN-API</consoleLink>. Там же можно создать инстанс.',
   },
   session: {
     checking: 'Проверяем инстанс GREEN-API…',

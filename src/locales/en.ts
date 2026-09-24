@@ -21,6 +21,8 @@ export const en = {
     webhookDeclined:
       "Messages keep going to the other address, so they can't be shown here.",
     hint: 'Credentials are stored in this browser only.',
+    console:
+      'Find idInstance and apiTokenInstance in the <consoleLink>GREEN-API console</consoleLink>, or create an instance there.',
   },
   session: {
     checking: 'Checking your GREEN-API instance…',
